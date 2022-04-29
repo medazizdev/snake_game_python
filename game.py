@@ -1,6 +1,7 @@
 import pygame 
 import sys
 import random
+import math
 
 
 # screen initialization
@@ -25,9 +26,9 @@ class Snake():
 		self.width = 5
 		self.parts = [[self.x, self.y], [self.x-self.width, self.y], [self.x-2*self.width, self.y], [self.x-3*self.width, self.y], [self.x-4*self.width, self.y], [self.x-5*self.width, self.y], [self.x-6*self.width, self.y]]
 		self.color = GREEN
-		self.head_color = BLUE
 		self.direction = 'right'
 		self.velocity = 5
+		self.score = 0
 		self.lost = False
 		# print(f'new head coordinate [{self.x}, {self.y}]')
 		# print(f'\t{self.parts}\n')
@@ -90,12 +91,11 @@ class Snake():
 			# right
 			self.parts.append([x3-self.width, y3])
 
+		self.score += 1
+
 	def draw_snake(self):
 		for part in self.parts:
-			if self.parts.index(part) == 0:
-				pygame.draw.rect(SCREEN, self.head_color, (part[0], part[1], self.width, self.width))
-			else:
-				pygame.draw.rect(SCREEN, self.color, (part[0], part[1], self.width, self.width))
+			pygame.draw.rect(SCREEN, self.color, (part[0], part[1], self.width, self.width))
 
 
 class Apple():
@@ -129,6 +129,21 @@ run = True
 
 # game logic (functions)
 
+def display_score():
+	font = pygame.font.Font('freesansbold.ttf', 14)
+	score_text = font.render(str(snake.score), True, BLUE)
+	score_text_rect = score_text.get_rect()
+	score_text_rect.center = (380, 20)
+	SCREEN.blit(score_text, score_text_rect)
+
+def display_timer():
+	font = pygame.font.Font('freesansbold.ttf', 14)
+	timer_text = font.render(f'{str(math.trunc(pygame.time.get_ticks()/1000))}', True, BLUE)
+	timer_text_rect = timer_text.get_rect()
+	timer_text_rect.center = (20, 20)
+	SCREEN.blit(timer_text, timer_text_rect)
+
+
 def update_display():
 	SCREEN.fill(GREY)
 	snake.change_snake_body_coordinates()
@@ -137,9 +152,14 @@ def update_display():
 	snake.check_snake_own_collision()
 	snake.draw_snake()
 	apple.draw_apple()
+	display_score()
+	display_timer()
 	pygame.display.update()
 
+
 # initiate game
+pygame.init()
+pygame.font.init()
 snake = Snake()
 apple = Apple()
 
