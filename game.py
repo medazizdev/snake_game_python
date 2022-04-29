@@ -71,7 +71,8 @@ class Snake():
 			snake_part_rect = pygame.Rect(self.parts[i][0], self.parts[i][1], self.width, self.width)
 			if snake_head_rect.colliderect(snake_part_rect):
 				self.lost = True
-				print('lost')
+				return True
+		return False
 
 	def add_score(self):
 		x3, y3 = self.parts[-1][0], self.parts[-1][1]
@@ -92,6 +93,12 @@ class Snake():
 			self.parts.append([x3-self.width, y3])
 
 		self.score += 1
+
+	def reinitiate_snake(self):
+		self.parts = [[self.x, self.y], [self.x-self.width, self.y], [self.x-2*self.width, self.y], [self.x-3*self.width, self.y], [self.x-4*self.width, self.y], [self.x-5*self.width, self.y], [self.x-6*self.width, self.y]]
+		self.score = 0
+		self.lost = False
+		self.direction = 'right'
 
 	def draw_snake(self):
 		for part in self.parts:
@@ -145,11 +152,37 @@ def display_timer():
 
 
 def update_display():
+	global status
 	SCREEN.fill(GREY)
-	snake.change_snake_body_coordinates()
-	if apple.check_eaten(snake):
-		snake.add_score()
-	snake.check_snake_own_collision()
+	if status == 'active':
+		snake.change_snake_body_coordinates()
+		if apple.check_eaten(snake):
+			snake.add_score()
+		if snake.check_snake_own_collision():
+			status = 'lost'
+	elif status == 'start' or status == 'pause' or status == 'lost':
+		play_buttom = pygame.Rect(0, 0, 150, 50)
+		play_buttom.center = (200, 200)
+		font = pygame.font.Font('freesansbold.ttf', 14)
+		if status == 'start':
+			play_text = font.render('PRESS P TO PLAY', True, (0, 0, 0))
+		elif status == 'pause':
+			play_buttom = pygame.Rect(0, 0, 180, 50)
+			play_buttom.center = (200, 200)
+			play_text = font.render('PRESS P TO CONTINUE', True, (0, 0, 0))
+		elif status == 'lost':
+			play_buttom = pygame.Rect(0, 0, 200, 50)
+			play_buttom.center = (200, 200)
+			play_text = font.render('LOST! PRESS P TO REPLAY', True, RED)
+		play_text_rect = play_text.get_rect()
+		play_text_rect.center = play_buttom.center
+		if status == 'lost':
+			pygame.draw.rect(SCREEN, RED, play_buttom, 1)
+		else:
+			pygame.draw.rect(SCREEN, (0, 0, 0), play_buttom, 1)
+		SCREEN.blit(play_text, play_text_rect)
+
+
 	snake.draw_snake()
 	apple.draw_apple()
 	display_score()
@@ -157,7 +190,11 @@ def update_display():
 	pygame.display.update()
 
 
+
+
+
 # initiate game
+status = 'start' # status can be 'start' 'active' 'pause' 'lost'
 pygame.init()
 pygame.font.init()
 snake = Snake()
@@ -189,9 +226,21 @@ while run:
 				snake.direction = 'up'
 			if event.key == pygame.K_DOWN and snake.direction != 'up':
 				snake.direction = 'down'
-			if event.key == pygame.K_SPACE:
+			# if event.key == pygame.K_SPACE:
 				# print(f'\n{snake.parts}\n\tx head {snake.x} y head {snake.y}\n\tdirection {snake.direction}')
-				snake.add_score()
+				# snake.add_score()
+			if event.key == pygame.K_p:
+				if status == 'start':
+					status = 'active'
+				elif status == 'active':
+					status = 'pause'
+				elif status == 'pause':
+					status = 'active'
+				elif status == 'lost':
+					status = 'active'
+					snake.reinitiate_snake()
+
+
 
 	# update screen
 
