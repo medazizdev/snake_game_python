@@ -1,5 +1,6 @@
 import pygame 
 import sys
+import random
 
 
 # screen initialization
@@ -25,8 +26,8 @@ class Snake():
 		self.color = GREEN
 		self.direction = 'right'
 		self.velocity = 5
-		print(f'new head coordinate [{self.x}, {self.y}]')
-		print(f'\t{self.parts}\n')
+		# print(f'new head coordinate [{self.x}, {self.y}]')
+		# print(f'\t{self.parts}\n')
 
 	def change_snake_head_coordinates(self):
 		if self.direction == 'right':
@@ -38,7 +39,7 @@ class Snake():
 		elif self.direction == 'down':
 			self.y += self.velocity
 
-		print(f'\nnew head coordinate [{self.x}, {self.y}]')
+		# print(f'\nnew head coordinate [{self.x}, {self.y}]')
 		
 
 		return [self.x, self.y]
@@ -48,12 +49,33 @@ class Snake():
 		# this solution is not the best -- the velocity should always have the same value as the snake single part width --
 		self.parts.pop(-1)
 		self.parts.insert(0, self.change_snake_head_coordinates())
-		print(f'\t{self.parts}\n')
+		# print(f'\t{self.parts}\n')
 		
 
 	def draw_snake(self):
 		for part in self.parts:
 			pygame.draw.rect(SCREEN, self.color, (part[0], part[1], self.width, self.width))
+
+
+class Apple():
+	def __init__(self):
+		self.width = 5
+		self.color = RED
+		self.x = 300
+		self.y = 300
+		self.apple_rect = pygame.Rect(self.x, self.y, self.width, self.width)
+
+	def change_position(self):
+		self.apple_rect.x = random.randrange(10, 390, 5)
+		self.apple_rect.y = random.randrange(10, 390, 5)
+
+	def check_eaten(self, snake):
+		snake_rect = pygame.Rect(snake.x, snake.y, snake.width, snake.width)
+		if snake_rect.colliderect(self.apple_rect):
+			self.change_position()
+
+	def draw_apple(self):
+		pygame.draw.rect(SCREEN, RED, self.apple_rect)
 
 
 # game variables and settings
@@ -67,11 +89,14 @@ run = True
 def update_display():
 	SCREEN.fill(GREY)
 	snake.change_snake_body_coordinates()
+	apple.check_eaten(snake)
 	snake.draw_snake()
+	apple.draw_apple()
 	pygame.display.update()
 
 # initiate game
 snake = Snake()
+apple = Apple()
 
 # game loop
 
